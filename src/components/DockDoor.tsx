@@ -156,7 +156,7 @@ export const DockDoor = ({ door, userName, onStartAssignment, onClear }: DockDoo
             OUTBOUND
           </Button>
         </div>
-      ) : isAssignedToYou ? (
+      ) : (
         <Button
           onClick={() => onClear(door.door_number)}
           variant="destructive"
@@ -164,10 +164,6 @@ export const DockDoor = ({ door, userName, onStartAssignment, onClear }: DockDoo
           size="sm"
         >
           Clear Door
-        </Button>
-      ) : (
-        <Button disabled className="w-full mt-4" size="sm" variant="secondary">
-          In Use by {door.assigned_by}
         </Button>
       )}
     </Card>
