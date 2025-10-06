@@ -116,7 +116,7 @@ const Index = () => {
           status: "ASSIGNED",
           type,
           assigned_by: userName,
-          assigned_by_id: userName,
+          assigned_by_id: null,
           trailer_number: trailerNumber,
           timestamp,
         })
@@ -132,7 +132,7 @@ const Index = () => {
         type,
         event_timestamp: timestamp,
         assigned_by: userName,
-        assigned_by_id: userName,
+        assigned_by_id: null,
       });
 
       if (historyError) throw historyError;
@@ -178,7 +178,7 @@ const Index = () => {
           type: door.type,
           event_timestamp: clearTimestamp,
           assigned_by: userName,
-          assigned_by_id: userName,
+          assigned_by_id: null,
           assignment_timestamp: door.timestamp,
         });
 
