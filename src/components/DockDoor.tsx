@@ -110,10 +110,10 @@ export const DockDoor = ({ door, userName, onStartAssignment, onClear }: DockDoo
                 door.type === "INBOUND" ? "ring-inbound bg-inbound/20" : "ring-outbound bg-outbound/20"
               }`} style={{ minHeight: "50px", maxHeight: "70px" }}>
                 <div className="flex items-center justify-center h-full">
-                  <span className={`text-xs font-bold ${
+                  <span className={`text-2xl font-extrabold ${
                     door.type === "INBOUND" ? "text-inbound" : "text-outbound"
                   }`}>
-                    {door.type}
+                    {door.trailer_number}
                   </span>
                 </div>
               </div>
