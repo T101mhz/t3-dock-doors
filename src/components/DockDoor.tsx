@@ -14,7 +14,7 @@ interface DockDoorProps {
     trailer_number: string | null;
     timestamp: string | null;
   };
-  userId: string | null;
+  userName: string;
   onStartAssignment: (doorNumber: number, type: "INBOUND" | "OUTBOUND") => void;
   onClear: (doorNumber: number) => void;
 }
@@ -22,7 +22,7 @@ interface DockDoorProps {
 const ORANGE_THRESHOLD = 90 * 60; // 90 minutes in seconds
 const RED_THRESHOLD = 120 * 60; // 120 minutes in seconds
 
-export const DockDoor = ({ door, userId, onStartAssignment, onClear }: DockDoorProps) => {
+export const DockDoor = ({ door, userName, onStartAssignment, onClear }: DockDoorProps) => {
   const [elapsedTime, setElapsedTime] = useState("00:00:00");
   const [diffInSeconds, setDiffInSeconds] = useState(0);
 
@@ -56,7 +56,7 @@ export const DockDoor = ({ door, userId, onStartAssignment, onClear }: DockDoorP
     };
   }, [door.status, door.timestamp]);
 
-  const isAssignedToYou = door.status === "ASSIGNED" && door.assigned_by_id === userId;
+  const isAssignedToYou = door.status === "ASSIGNED" && door.assigned_by === userName;
   
   let borderColor = "border-border";
   let ringClass = "";

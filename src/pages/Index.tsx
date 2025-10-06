@@ -1,15 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { DockDoor } from "@/components/DockDoor";
 import { AssignmentModal } from "@/components/AssignmentModal";
 import { UserNamePrompt } from "@/components/UserNamePrompt";
 import { HistoryExport } from "@/components/HistoryExport";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut } from "lucide-react";
-import type { Session } from "@supabase/supabase-js";
 
 interface DockDoorData {
   id: string;
@@ -23,9 +19,7 @@ interface DockDoorData {
 }
 
 const Index = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const [session, setSession] = useState<Session | null>(null);
   const [doors, setDoors] = useState<Record<number, DockDoorData>>({});
   const [userName, setUserName] = useState<string | null>(null);
   const [assignmentDoor, setAssignmentDoor] = useState<{
@@ -33,35 +27,14 @@ const Index = () => {
     type: "INBOUND" | "OUTBOUND";
   } | null>(null);
 
-  // Check authentication and get user name
+  // Get user name from localStorage
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setSession(session);
-        const storedName = localStorage.getItem("dockUserName");
-        setUserName(storedName);
-      }
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setSession(session);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    const storedName = localStorage.getItem("dockUserName");
+    setUserName(storedName);
+  }, []);
 
   // Fetch initial door data and subscribe to real-time updates
   useEffect(() => {
-    if (!session) return;
-
     const fetchDoors = async () => {
       const { data, error } = await supabase
         .from("dock_doors")
@@ -111,24 +84,19 @@ const Index = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [session, toast]);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
+  }, [toast]);
 
   const handleStartAssignment = (doorNumber: number, type: "INBOUND" | "OUTBOUND") => {
     setAssignmentDoor({ doorNumber, type });
   };
 
   const handleAssignmentSubmit = async (trailerNumber: string) => {
-    if (!assignmentDoor || !session || !userName) return;
+    if (!assignmentDoor || !userName) return;
 
     const { doorNumber, type } = assignmentDoor;
     const door = doors[doorNumber];
 
-    if (door && door.status === "ASSIGNED" && door.assigned_by_id !== session.user.id) {
+    if (door && door.status === "ASSIGNED" && door.assigned_by !== userName) {
       toast({
         title: "Door Unavailable",
         description: `Door ${doorNumber} is already assigned by ${door.assigned_by}`,
@@ -148,7 +116,7 @@ const Index = () => {
           status: "ASSIGNED",
           type,
           assigned_by: userName,
-          assigned_by_id: session.user.id,
+          assigned_by_id: userName,
           trailer_number: trailerNumber,
           timestamp,
         })
@@ -164,7 +132,7 @@ const Index = () => {
         type,
         event_timestamp: timestamp,
         assigned_by: userName,
-        assigned_by_id: session.user.id,
+        assigned_by_id: userName,
       });
 
       if (historyError) throw historyError;
@@ -185,11 +153,11 @@ const Index = () => {
   };
 
   const handleClear = async (doorNumber: number) => {
-    if (!session || !userName) return;
+    if (!userName) return;
 
     const door = doors[doorNumber];
 
-    if (!door || (door.status === "ASSIGNED" && door.assigned_by_id !== session.user.id)) {
+    if (!door || (door.status === "ASSIGNED" && door.assigned_by !== userName)) {
       toast({
         title: "Cannot Clear",
         description: `Door ${doorNumber} is assigned by ${door?.assigned_by}`,
@@ -210,7 +178,7 @@ const Index = () => {
           type: door.type,
           event_timestamp: clearTimestamp,
           assigned_by: userName,
-          assigned_by_id: session.user.id,
+          assigned_by_id: userName,
           assignment_timestamp: door.timestamp,
         });
 
@@ -259,8 +227,8 @@ const Index = () => {
     return Object.values(doors).sort((a, b) => a.door_number - b.door_number);
   }, [doors]);
 
-  if (!session || !userName) {
-    return userName === null ? <UserNamePrompt onSubmit={handleUserNameSubmit} /> : null;
+  if (!userName) {
+    return <UserNamePrompt onSubmit={handleUserNameSubmit} />;
   }
 
   return (
@@ -281,10 +249,6 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-3">
               <HistoryExport />
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
             </div>
           </div>
         </Card>
@@ -294,7 +258,7 @@ const Index = () => {
             <DockDoor
               key={door.door_number}
               door={door}
-              userId={session.user.id}
+              userName={userName}
               onStartAssignment={handleStartAssignment}
               onClear={handleClear}
             />
