@@ -157,10 +157,10 @@ const Index = () => {
 
     const door = doors[doorNumber];
 
-    if (!door || (door.status === "ASSIGNED" && door.assigned_by !== userName)) {
+    if (!door) {
       toast({
         title: "Cannot Clear",
-        description: `Door ${doorNumber} is assigned by ${door?.assigned_by}`,
+        description: `Door ${doorNumber} not found`,
         variant: "destructive",
       });
       return;
