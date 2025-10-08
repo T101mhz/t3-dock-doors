@@ -94,7 +94,9 @@ export const DockDoor = ({ door, userName, onStartAssignment, onClear }: DockDoo
 
   return (
     <Card className={`flex flex-col p-4 border-2 ${borderColor} ${ringClass} transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}>
-      <div className="flex justify-between items-center mb-3 pb-2 border-b border-border">
+      <div className={`flex justify-between items-center mb-3 pb-2 border-b border-border rounded-md -mx-4 -mt-4 px-4 pt-4 pb-2 ${
+        diffInSeconds >= RED_THRESHOLD ? "animate-pulse-red" : ""
+      }`}>
         <h2 className="text-3xl font-extrabold text-foreground">{door.door_number}</h2>
         <span className={`text-sm font-semibold uppercase tracking-wider ${statusColor}`}>
           {door.status === "AVAILABLE" ? "OPEN" : door.type}
