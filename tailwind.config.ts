@@ -90,7 +90,7 @@ export default {
             backgroundColor: "transparent",
           },
           "50%": {
-            backgroundColor: "hsl(var(--critical) / 0.15)",
+            backgroundColor: "hsl(var(--critical) / 0.4)",
           },
         },
       },
