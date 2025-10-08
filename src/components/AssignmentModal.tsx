@@ -10,25 +10,28 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface AssignmentModalProps {
   doorNumber: number | null;
   type: "INBOUND" | "OUTBOUND" | null;
   onClose: () => void;
-  onSubmit: (trailerNumber: string) => Promise<void>;
+  onSubmit: (trailerNumber: string, isReload: boolean) => Promise<void>;
 }
 
 export const AssignmentModal = ({ doorNumber, type, onClose, onSubmit }: AssignmentModalProps) => {
   const [trailerNumber, setTrailerNumber] = useState("");
+  const [isReload, setIsReload] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     if (!trailerNumber.trim()) return;
     
     setIsSubmitting(true);
-    await onSubmit(trailerNumber.trim().toUpperCase());
+    await onSubmit(trailerNumber.trim().toUpperCase(), isReload);
     setIsSubmitting(false);
     setTrailerNumber("");
+    setIsReload(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -62,6 +65,22 @@ export const AssignmentModal = ({ doorNumber, type, onClose, onSubmit }: Assignm
               autoFocus
             />
           </div>
+          
+          {type === "INBOUND" && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="reload"
+                checked={isReload}
+                onCheckedChange={(checked) => setIsReload(checked === true)}
+              />
+              <Label
+                htmlFor="reload"
+                className="text-sm font-normal cursor-pointer"
+              >
+                Reload
+              </Label>
+            </div>
+          )}
         </div>
 
         <DialogFooter>

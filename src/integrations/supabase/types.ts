@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           door_number: number
           id: string
+          reload_pending: boolean | null
           status: string
           timestamp: string | null
           trailer_number: string | null
@@ -33,6 +34,7 @@ export type Database = {
           created_at?: string
           door_number: number
           id?: string
+          reload_pending?: boolean | null
           status?: string
           timestamp?: string | null
           trailer_number?: string | null
@@ -45,6 +47,7 @@ export type Database = {
           created_at?: string
           door_number?: number
           id?: string
+          reload_pending?: boolean | null
           status?: string
           timestamp?: string | null
           trailer_number?: string | null

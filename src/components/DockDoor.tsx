@@ -13,16 +13,18 @@ interface DockDoorProps {
     assigned_by_id: string | null;
     trailer_number: string | null;
     timestamp: string | null;
+    reload_pending: boolean | null;
   };
   userName: string;
   onStartAssignment: (doorNumber: number, type: "INBOUND" | "OUTBOUND") => void;
   onClear: (doorNumber: number) => void;
+  onReload: (doorNumber: number) => void;
 }
 
 const ORANGE_THRESHOLD = 90 * 60; // 90 minutes in seconds
 const RED_THRESHOLD = 120 * 60; // 120 minutes in seconds
 
-export const DockDoor = ({ door, userName, onStartAssignment, onClear }: DockDoorProps) => {
+export const DockDoor = ({ door, userName, onStartAssignment, onClear, onReload }: DockDoorProps) => {
   const [elapsedTime, setElapsedTime] = useState("00:00:00");
   const [diffInSeconds, setDiffInSeconds] = useState(0);
 
@@ -158,6 +160,14 @@ export const DockDoor = ({ door, userName, onStartAssignment, onClear }: DockDoo
             OUTBOUND
           </Button>
         </div>
+      ) : door.reload_pending ? (
+        <Button
+          onClick={() => onReload(door.door_number)}
+          className="w-full mt-4 bg-primary hover:bg-primary/90"
+          size="sm"
+        >
+          Start Reload
+        </Button>
       ) : (
         <Button
           onClick={() => onClear(door.door_number)}

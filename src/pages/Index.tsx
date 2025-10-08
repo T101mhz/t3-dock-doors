@@ -16,6 +16,7 @@ interface DockDoorData {
   assigned_by_id: string | null;
   trailer_number: string | null;
   timestamp: string | null;
+  reload_pending: boolean | null;
 }
 
 const Index = () => {
@@ -90,7 +91,7 @@ const Index = () => {
     setAssignmentDoor({ doorNumber, type });
   };
 
-  const handleAssignmentSubmit = async (trailerNumber: string) => {
+  const handleAssignmentSubmit = async (trailerNumber: string, isReload: boolean) => {
     if (!assignmentDoor || !userName) return;
 
     const { doorNumber, type } = assignmentDoor;
@@ -119,6 +120,7 @@ const Index = () => {
           assigned_by_id: null,
           trailer_number: trailerNumber,
           timestamp,
+          reload_pending: isReload,
         })
         .eq("door_number", doorNumber);
 
@@ -195,6 +197,7 @@ const Index = () => {
           assigned_by_id: null,
           trailer_number: null,
           timestamp: null,
+          reload_pending: false,
         })
         .eq("door_number", doorNumber);
 
@@ -221,6 +224,61 @@ const Index = () => {
   const handleChangeName = () => {
     localStorage.removeItem("dockUserName");
     setUserName(null);
+  };
+
+  const handleReload = async (doorNumber: number) => {
+    if (!userName) return;
+
+    const door = doors[doorNumber];
+
+    if (!door || !door.trailer_number) {
+      toast({
+        title: "Cannot Reload",
+        description: `Door ${doorNumber} has no trailer assigned`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const newTimestamp = new Date().toISOString();
+
+      // Log reload to history
+      const { error: historyError } = await supabase.from("dock_history").insert({
+        door_number: doorNumber,
+        trailer_number: door.trailer_number,
+        action: "RELOAD",
+        type: door.type,
+        event_timestamp: newTimestamp,
+        assigned_by: userName,
+        assigned_by_id: null,
+        assignment_timestamp: door.timestamp,
+      });
+
+      if (historyError) throw historyError;
+
+      // Reset timer and clear reload_pending
+      const { error: updateError } = await supabase
+        .from("dock_doors")
+        .update({
+          timestamp: newTimestamp,
+          reload_pending: false,
+        })
+        .eq("door_number", doorNumber);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Reload Started",
+        description: `Door ${doorNumber} reload started`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Reload Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const sortedDoors = useMemo(() => {
@@ -261,6 +319,7 @@ const Index = () => {
               userName={userName}
               onStartAssignment={handleStartAssignment}
               onClear={handleClear}
+              onReload={handleReload}
             />
           ))}
         </div>
