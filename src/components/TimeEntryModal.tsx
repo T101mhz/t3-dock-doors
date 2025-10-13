@@ -77,6 +77,7 @@ export const TimeEntryModal = ({ doorNumber, onClose, onSubmit }: TimeEntryModal
             <Input
               id="time"
               type="time"
+              step="60"
               value={selectedTime}
               onChange={(e) => setSelectedTime(e.target.value)}
               onKeyPress={handleKeyPress}
