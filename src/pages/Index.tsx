@@ -11,7 +11,7 @@ interface DockDoorData {
   id: string;
   door_number: number;
   status: "AVAILABLE" | "ASSIGNED";
-  type: "INBOUND" | "OUTBOUND" | null;
+  type: "INBOUND" | "OUTBOUND" | "RELOAD" | null;
   assigned_by: string | null;
   assigned_by_id: string | null;
   trailer_number: string | null;
@@ -257,11 +257,12 @@ const Index = () => {
 
       if (historyError) throw historyError;
 
-      // Reset timer and clear reload_pending
+      // Reset timer, change type to RELOAD, and clear reload_pending
       const { error: updateError } = await supabase
         .from("dock_doors")
         .update({
           timestamp: newTimestamp,
+          type: "RELOAD",
           reload_pending: false,
         })
         .eq("door_number", doorNumber);

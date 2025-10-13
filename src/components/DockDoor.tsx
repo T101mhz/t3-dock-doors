@@ -8,7 +8,7 @@ interface DockDoorProps {
     id: string;
     door_number: number;
     status: "AVAILABLE" | "ASSIGNED";
-    type: "INBOUND" | "OUTBOUND" | null;
+    type: "INBOUND" | "OUTBOUND" | "RELOAD" | null;
     assigned_by: string | null;
     assigned_by_id: string | null;
     trailer_number: string | null;
@@ -77,13 +77,25 @@ export const DockDoor = ({ door, userName, onStartAssignment, onClear, onReload 
       statusColor = "text-warning";
       timerColor = "text-warning font-bold";
     } else if (isAssignedToYou) {
-      borderColor = door.type === "INBOUND" ? "border-inbound" : "border-outbound";
-      statusColor = door.type === "INBOUND" ? "text-inbound" : "text-outbound";
-      ringClass = door.type === "INBOUND" ? "ring-1 ring-inbound/30" : "ring-1 ring-outbound/30";
+      if (door.type === "RELOAD") {
+        borderColor = "border-primary";
+        statusColor = "text-primary";
+        ringClass = "ring-1 ring-primary/30";
+      } else {
+        borderColor = door.type === "INBOUND" ? "border-inbound" : "border-outbound";
+        statusColor = door.type === "INBOUND" ? "text-inbound" : "text-outbound";
+        ringClass = door.type === "INBOUND" ? "ring-1 ring-inbound/30" : "ring-1 ring-outbound/30";
+      }
     } else {
-      borderColor = door.type === "INBOUND" ? "border-inbound/60" : "border-outbound/60";
-      statusColor = door.type === "INBOUND" ? "text-inbound/80" : "text-outbound/80";
-      ringClass = door.type === "INBOUND" ? "ring-1 ring-inbound/20" : "ring-1 ring-outbound/20";
+      if (door.type === "RELOAD") {
+        borderColor = "border-primary/60";
+        statusColor = "text-primary/80";
+        ringClass = "ring-1 ring-primary/20";
+      } else {
+        borderColor = door.type === "INBOUND" ? "border-inbound/60" : "border-outbound/60";
+        statusColor = door.type === "INBOUND" ? "text-inbound/80" : "text-outbound/80";
+        ringClass = door.type === "INBOUND" ? "ring-1 ring-inbound/20" : "ring-1 ring-outbound/20";
+      }
     }
   } else {
     borderColor = "border-available";
@@ -111,7 +123,11 @@ export const DockDoor = ({ door, userName, onStartAssignment, onClear, onReload 
           {door.status === "ASSIGNED" && (
             <div className="absolute inset-x-0 bottom-[-10px] p-2">
               <div className={`w-full h-auto rounded-lg ring-2 transition-transform duration-300 ${
-                door.type === "INBOUND" ? "ring-inbound bg-inbound/20" : "ring-outbound bg-outbound/20"
+                door.type === "RELOAD" 
+                  ? "ring-primary bg-primary/20" 
+                  : door.type === "INBOUND" 
+                    ? "ring-inbound bg-inbound/20" 
+                    : "ring-outbound bg-outbound/20"
               }`} style={{ minHeight: "50px", maxHeight: "70px" }}>
                 <div className="flex items-center justify-center h-full">
                   <span className="text-2xl font-extrabold text-black">
