@@ -17,6 +17,7 @@ interface DockDoorData {
   trailer_number: string | null;
   timestamp: string | null;
   reload_pending: boolean | null;
+  manual_time_entry: boolean | null;
 }
 
 const Index = () => {
@@ -226,6 +227,56 @@ const Index = () => {
     setUserName(null);
   };
 
+  const handleManualTimeEntry = async (doorNumber: number, manualTime: string) => {
+    if (!userName) return;
+
+    const door = doors[doorNumber];
+    if (!door) {
+      toast({
+        title: "Cannot Update Time",
+        description: `Door ${doorNumber} not found`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate that the time is not in the future
+    const enteredTime = new Date(manualTime).getTime();
+    const now = new Date().getTime();
+    
+    if (enteredTime > now) {
+      toast({
+        title: "Invalid Time",
+        description: "Cannot enter a future time",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error: updateError } = await supabase
+        .from("dock_doors")
+        .update({
+          timestamp: manualTime,
+          manual_time_entry: true,
+        })
+        .eq("door_number", doorNumber);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Time Updated",
+        description: `Manual check-in time set for door ${doorNumber}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Update Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleReload = async (doorNumber: number) => {
     if (!userName) return;
 
@@ -321,6 +372,7 @@ const Index = () => {
               onStartAssignment={handleStartAssignment}
               onClear={handleClear}
               onReload={handleReload}
+              onManualTimeEntry={handleManualTimeEntry}
             />
           ))}
         </div>

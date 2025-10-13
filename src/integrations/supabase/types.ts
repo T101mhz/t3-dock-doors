@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           door_number: number
           id: string
+          manual_time_entry: boolean | null
           reload_pending: boolean | null
           status: string
           timestamp: string | null
@@ -34,6 +35,7 @@ export type Database = {
           created_at?: string
           door_number: number
           id?: string
+          manual_time_entry?: boolean | null
           reload_pending?: boolean | null
           status?: string
           timestamp?: string | null
@@ -47,6 +49,7 @@ export type Database = {
           created_at?: string
           door_number?: number
           id?: string
+          manual_time_entry?: boolean | null
           reload_pending?: boolean | null
           status?: string
           timestamp?: string | null

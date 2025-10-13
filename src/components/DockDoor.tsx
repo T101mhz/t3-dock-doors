@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock } from "lucide-react";
+import { Clock, Edit3 } from "lucide-react";
+import { TimeEntryModal } from "./TimeEntryModal";
 
 interface DockDoorProps {
   door: {
@@ -14,19 +15,22 @@ interface DockDoorProps {
     trailer_number: string | null;
     timestamp: string | null;
     reload_pending: boolean | null;
+    manual_time_entry: boolean | null;
   };
   userName: string;
   onStartAssignment: (doorNumber: number, type: "INBOUND" | "OUTBOUND") => void;
   onClear: (doorNumber: number) => void;
   onReload: (doorNumber: number) => void;
+  onManualTimeEntry: (doorNumber: number, manualTime: string) => void;
 }
 
 const ORANGE_THRESHOLD = 90 * 60; // 90 minutes in seconds
 const RED_THRESHOLD = 120 * 60; // 120 minutes in seconds
 
-export const DockDoor = ({ door, userName, onStartAssignment, onClear, onReload }: DockDoorProps) => {
+export const DockDoor = ({ door, userName, onStartAssignment, onClear, onReload, onManualTimeEntry }: DockDoorProps) => {
   const [elapsedTime, setElapsedTime] = useState("00:00:00");
   const [diffInSeconds, setDiffInSeconds] = useState(0);
+  const [showTimeEntry, setShowTimeEntry] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -147,9 +151,25 @@ export const DockDoor = ({ door, userName, onStartAssignment, onClear, onReload 
         </p>
         {door.status === "ASSIGNED" && (
           <div className="pt-2 border-t border-border space-y-1">
-            <p className="text-muted-foreground">
-              Assigned: {assignedTimeDisplay} by {door.assigned_by}
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-muted-foreground text-xs">
+                Assigned: {assignedTimeDisplay} by {door.assigned_by}
+              </p>
+              {isAssignedToYou && (
+                <button
+                  onClick={() => setShowTimeEntry(true)}
+                  className="text-primary hover:text-primary/80 transition-colors"
+                  title="Manually enter check-in time"
+                >
+                  <Edit3 className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+            {door.manual_time_entry && (
+              <p className="text-[10px] font-bold text-primary uppercase tracking-wide">
+                Check-in time manually entered
+              </p>
+            )}
             <div className={`flex items-center space-x-1 font-mono text-sm font-bold ${timerColor}`}>
               <Clock className="h-4 w-4" />
               <span>{elapsedTime}</span>
@@ -194,6 +214,12 @@ export const DockDoor = ({ door, userName, onStartAssignment, onClear, onReload 
           Clear Door
         </Button>
       )}
+
+      <TimeEntryModal
+        doorNumber={showTimeEntry ? door.door_number : null}
+        onClose={() => setShowTimeEntry(false)}
+        onSubmit={(manualTime) => onManualTimeEntry(door.door_number, manualTime)}
+      />
     </Card>
   );
 };
