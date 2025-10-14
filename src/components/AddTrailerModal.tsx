@@ -33,9 +33,9 @@ export const AddTrailerModal = ({ open, onOpenChange, onSuccess }: AddTrailerMod
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!loadType || !trailerNumber || !carrier || !orderNumber) {
-      toast.error("Please fill in all fields");
+    
+    if (!loadType || !trailerNumber) {
+      toast.error("Please fill in load type and trailer number");
       return;
     }
 
@@ -101,25 +101,25 @@ export const AddTrailerModal = ({ open, onOpenChange, onSuccess }: AddTrailerMod
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="carrier">Carrier</Label>
-            <Input
-              id="carrier"
-              value={carrier}
-              onChange={(e) => setCarrier(e.target.value)}
-              placeholder="Enter carrier name"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="carrier">Carrier (optional)</Label>
+              <Input
+                id="carrier"
+                value={carrier}
+                onChange={(e) => setCarrier(e.target.value)}
+                placeholder="Enter carrier name"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="orderNumber">Order #</Label>
-            <Input
-              id="orderNumber"
-              value={orderNumber}
-              onChange={(e) => setOrderNumber(e.target.value)}
-              placeholder="Enter order number"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="orderNumber">Order # (optional)</Label>
+              <Input
+                id="orderNumber"
+                value={orderNumber}
+                onChange={(e) => setOrderNumber(e.target.value)}
+                placeholder="Enter order number"
+              />
+            </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Adding..." : "Add Trailer"}

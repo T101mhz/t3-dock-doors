@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { AddTrailerModal } from "./AddTrailerModal";
 import { DoorSelectionModal } from "./DoorSelectionModal";
+import { format } from "date-fns";
 
 interface ParkingLotTrailer {
   id: string;
@@ -123,15 +124,16 @@ export const ParkingLotModal = ({ open, onOpenChange, onAssignToDoor, userName }
                   <TableRow>
                     <TableHead>Load Type</TableHead>
                     <TableHead>Trailer #</TableHead>
-                    <TableHead>Carrier</TableHead>
-                    <TableHead>Order #</TableHead>
+                    <TableHead>Carrier (optional)</TableHead>
+                    <TableHead>Order # (optional)</TableHead>
+                    <TableHead>Parked At</TableHead>
                     <TableHead>Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {trailers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                         No trailers waiting
                       </TableCell>
                     </TableRow>
@@ -140,8 +142,9 @@ export const ParkingLotModal = ({ open, onOpenChange, onAssignToDoor, userName }
                       <TableRow key={trailer.id}>
                         <TableCell className="font-medium">{trailer.load_type}</TableCell>
                         <TableCell>{trailer.trailer_number}</TableCell>
-                        <TableCell>{trailer.carrier}</TableCell>
-                        <TableCell>{trailer.order_number}</TableCell>
+                        <TableCell>{trailer.carrier || "-"}</TableCell>
+                        <TableCell>{trailer.order_number || "-"}</TableCell>
+                        <TableCell>{format(new Date(trailer.created_at), "MM/dd/yyyy h:mm a")}</TableCell>
                         <TableCell>
                           <Button
                             size="sm"
