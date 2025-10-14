@@ -4,8 +4,11 @@ import { DockDoor } from "@/components/DockDoor";
 import { AssignmentModal } from "@/components/AssignmentModal";
 import { UserNamePrompt } from "@/components/UserNamePrompt";
 import { HistoryExport } from "@/components/HistoryExport";
+import { ParkingLotModal } from "@/components/ParkingLotModal";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Truck } from "lucide-react";
 
 interface DockDoorData {
   id: string;
@@ -28,6 +31,7 @@ const Index = () => {
     doorNumber: number;
     type: "INBOUND" | "OUTBOUND";
   } | null>(null);
+  const [parkingLotOpen, setParkingLotOpen] = useState(false);
 
   // Get user name from localStorage
   useEffect(() => {
@@ -333,6 +337,74 @@ const Index = () => {
     }
   };
 
+  const handleAssignToDoor = async (trailerId: string, loadType: string, trailerNumber: string) => {
+    if (!userName) return;
+
+    // Find the first available door
+    const availableDoor = sortedDoors.find(door => door.status === "AVAILABLE");
+
+    if (!availableDoor) {
+      toast({
+        title: "No Available Doors",
+        description: "All dock doors are currently assigned",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const timestamp = new Date().toISOString();
+
+      // Delete from parking lot
+      const { error: deleteError } = await supabase
+        .from("parking_lot_trailers")
+        .delete()
+        .eq("id", trailerId);
+
+      if (deleteError) throw deleteError;
+
+      // Update door status
+      const { error: updateError } = await supabase
+        .from("dock_doors")
+        .update({
+          status: "ASSIGNED",
+          type: loadType as "INBOUND" | "OUTBOUND",
+          assigned_by: userName,
+          assigned_by_id: null,
+          trailer_number: trailerNumber,
+          timestamp,
+          reload_pending: false,
+        })
+        .eq("door_number", availableDoor.door_number);
+
+      if (updateError) throw updateError;
+
+      // Log to history
+      const { error: historyError } = await supabase.from("dock_history").insert({
+        door_number: availableDoor.door_number,
+        trailer_number: trailerNumber,
+        action: "ASSIGNED",
+        type: loadType as "INBOUND" | "OUTBOUND",
+        event_timestamp: timestamp,
+        assigned_by: userName,
+        assigned_by_id: null,
+      });
+
+      if (historyError) throw historyError;
+
+      toast({
+        title: "Trailer Assigned",
+        description: `Trailer ${trailerNumber} assigned to Door ${availableDoor.door_number}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Assignment Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const sortedDoors = useMemo(() => {
     return Object.values(doors).sort((a, b) => a.door_number - b.door_number);
   }, [doors]);
@@ -358,6 +430,14 @@ const Index = () => {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <Button 
+                onClick={() => setParkingLotOpen(true)}
+                variant="secondary"
+                className="gap-2"
+              >
+                <Truck className="h-4 w-4" />
+                Parking Lot
+              </Button>
               <HistoryExport />
             </div>
           </div>
@@ -387,6 +467,13 @@ const Index = () => {
         type={assignmentDoor?.type ?? null}
         onClose={() => setAssignmentDoor(null)}
         onSubmit={handleAssignmentSubmit}
+      />
+
+      <ParkingLotModal
+        open={parkingLotOpen}
+        onOpenChange={setParkingLotOpen}
+        onAssignToDoor={handleAssignToDoor}
+        userName={userName}
       />
     </div>
   );

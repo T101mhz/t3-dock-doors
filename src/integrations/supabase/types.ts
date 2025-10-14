@@ -98,6 +98,33 @@ export type Database = {
         }
         Relationships: []
       }
+      parking_lot_trailers: {
+        Row: {
+          carrier: string
+          created_at: string
+          id: string
+          load_type: string
+          order_number: string
+          trailer_number: string
+        }
+        Insert: {
+          carrier: string
+          created_at?: string
+          id?: string
+          load_type: string
+          order_number: string
+          trailer_number: string
+        }
+        Update: {
+          carrier?: string
+          created_at?: string
+          id?: string
+          load_type?: string
+          order_number?: string
+          trailer_number?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
