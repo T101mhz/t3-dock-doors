@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { AddTrailerModal } from "./AddTrailerModal";
+import { DoorSelectionModal } from "./DoorSelectionModal";
 
 interface ParkingLotTrailer {
   id: string;
@@ -31,13 +32,15 @@ interface ParkingLotTrailer {
 interface ParkingLotModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAssignToDoor: (trailerId: string, loadType: string, trailerNumber: string) => void;
+  onAssignToDoor: (trailerId: string, loadType: string, trailerNumber: string, doorNumber: number) => void;
   userName: string;
 }
 
 export const ParkingLotModal = ({ open, onOpenChange, onAssignToDoor, userName }: ParkingLotModalProps) => {
   const [trailers, setTrailers] = useState<ParkingLotTrailer[]>([]);
   const [addTrailerOpen, setAddTrailerOpen] = useState(false);
+  const [selectedTrailer, setSelectedTrailer] = useState<ParkingLotTrailer | null>(null);
+  const [doorSelectionOpen, setDoorSelectionOpen] = useState(false);
 
   const fetchTrailers = async () => {
     const { data, error } = await supabase
@@ -84,7 +87,20 @@ export const ParkingLotModal = ({ open, onOpenChange, onAssignToDoor, userName }
   }, [open]);
 
   const handleAssign = (trailer: ParkingLotTrailer) => {
-    onAssignToDoor(trailer.id, trailer.load_type, trailer.trailer_number);
+    setSelectedTrailer(trailer);
+    setDoorSelectionOpen(true);
+  };
+
+  const handleDoorSelection = (doorNumber: number) => {
+    if (selectedTrailer) {
+      onAssignToDoor(
+        selectedTrailer.id,
+        selectedTrailer.load_type,
+        selectedTrailer.trailer_number,
+        doorNumber
+      );
+      setSelectedTrailer(null);
+    }
   };
 
   return (
@@ -148,6 +164,13 @@ export const ParkingLotModal = ({ open, onOpenChange, onAssignToDoor, userName }
         open={addTrailerOpen}
         onOpenChange={setAddTrailerOpen}
         onSuccess={fetchTrailers}
+      />
+
+      <DoorSelectionModal
+        open={doorSelectionOpen}
+        onOpenChange={setDoorSelectionOpen}
+        onConfirm={handleDoorSelection}
+        trailerNumber={selectedTrailer?.trailer_number || ""}
       />
     </>
   );

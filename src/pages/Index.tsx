@@ -337,16 +337,24 @@ const Index = () => {
     }
   };
 
-  const handleAssignToDoor = async (trailerId: string, loadType: string, trailerNumber: string) => {
+  const handleAssignToDoor = async (trailerId: string, loadType: string, trailerNumber: string, doorNumber: number) => {
     if (!userName) return;
 
-    // Find the first available door
-    const availableDoor = sortedDoors.find(door => door.status === "AVAILABLE");
+    const selectedDoor = doors[doorNumber];
 
-    if (!availableDoor) {
+    if (!selectedDoor) {
       toast({
-        title: "No Available Doors",
-        description: "All dock doors are currently assigned",
+        title: "Invalid Door",
+        description: `Door ${doorNumber} not found`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedDoor.status === "ASSIGNED") {
+      toast({
+        title: "Door Unavailable",
+        description: `Door ${doorNumber} is already assigned`,
         variant: "destructive",
       });
       return;
@@ -375,13 +383,13 @@ const Index = () => {
           timestamp,
           reload_pending: false,
         })
-        .eq("door_number", availableDoor.door_number);
+        .eq("door_number", doorNumber);
 
       if (updateError) throw updateError;
 
       // Log to history
       const { error: historyError } = await supabase.from("dock_history").insert({
-        door_number: availableDoor.door_number,
+        door_number: doorNumber,
         trailer_number: trailerNumber,
         action: "ASSIGNED",
         type: loadType as "INBOUND" | "OUTBOUND",
@@ -394,7 +402,7 @@ const Index = () => {
 
       toast({
         title: "Trailer Assigned",
-        description: `Trailer ${trailerNumber} assigned to Door ${availableDoor.door_number}`,
+        description: `Trailer ${trailerNumber} assigned to Door ${doorNumber}`,
       });
     } catch (error: any) {
       toast({
